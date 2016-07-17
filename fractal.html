@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"></meta>
+		<title>♣Fractal♠</title>
+		<script type="text/javascript">
+			function clearScreen() {
+				var c = document.getElementById("canvas");
+				var canvas = c.getContext("2d");
+				canvas.clearRect(0,0,c.width,c.height);
+			}
+			function drawLine(startX, startY, endX, endY) {
+				canvas.moveTo(startX, startY);
+				canvas.lineTo(endX, endY);
+				canvas.stroke();
+			}
+			function initCanvas() {
+				var c = document.getElementById("canvas");
+				var canvas = c.getContext("2d");
+				return canvas;
+			}
+			function drawCircle(startx, starty, radius) {
+				canvas.beginPath();
+				canvas.arc(startx,starty,radius,0,2*Math.PI);
+				canvas.stroke();
+			}
+			function randint(min, max) {
+				return Math.floor((Math.random()*(max-min + 1)) + min);
+			}
+			function base (a,b,c) {this.x = a; this.y = b; this.size = c};
+
+			function draw2() {
+			//var strokeColour = 0x101010;
+			var draw_line = document.getElementById("draw_line").value;
+			var constant_lineWidth = document.getElementById("constant_lineWidth").value;
+			var lineWidth = parseInt(document.getElementById("lineWidth").value);
+			var distance = parseInt(document.getElementById("distance").value);
+			var offshoots = parseInt(document.getElementById("offshoots").value);
+			var size = parseInt(document.getElementById("size").value);		//Increase fractal size (I think it increases lag slightly but not too bad)
+			//var canvas = initCanvas();
+			var counter = parseInt(document.getElementById("repeat").value);		//choose how far through the fibarray you base the first sequence for (bigger number more lag)
+			var x = 0;
+			var array_string = (document.getElementById("array").value).split(", ");
+			var string_len = array_string.length;
+			var fibArray = [];
+			for(i = 0; i < string_len;i++) {
+				fibArray[i] = parseInt(array_string[i]);
+			}
+			//var fibArray = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946];		//filled with size values which fractal is based upon (currently fibboncia sequence)
+			var activeArray = [new base(document.getElementById("canvas").width/2, document.getElementById("canvas").height/2, counter)];
+			console.log(activeArray.length);
+			while(counter > 0) {
+				var inactiveArray = [];
+				for(x = 0; x < activeArray.length; x++) {
+					drawCircle(activeArray[x].x, activeArray[x].y, fibArray[activeArray[x].size] * size);		//Draws circle, comment if you like but I don't think it'll make it look good
+					var r, x1, x2, y1, y2;
+					var p = -1;
+					for(y = 0; y < activeArray[x].size; y++) {
+
+						//alert("in for loop");
+						//var r = randint(0,10);	// R is used if you want to have a probability based array
+						for(i = 0; i < offshoots; i++) {	// change the '8' --bigger number causes more lag -- to change the fractal formation, also change the 360/8 below to match the number for the base sequence, or leave it to experiment with weird sequences //comment when using R
+						//if(r !== p) 			// uncomment when using R instead of non-probability fractal
+
+							var angle = i * 360/offshoots * Math.PI/180;
+							var x1 = fibArray[activeArray[x].size] * size * Math.cos(angle) + activeArray[x].x;
+							var x2 = fibArray[activeArray[x].size] * (size*distance) * Math.cos(angle) + activeArray[x].x;		//change the size multiple to modify distance between origin and destination of next fractal itteration
+							var y1 = fibArray[activeArray[x].size] * size * Math.sin(angle) + activeArray[x].y;
+							var y2 = fibArray[activeArray[x].size] * (size*distance) * Math.sin(angle) + activeArray[x].y;		//change the size multiple to modify distance between origin and destination of next fractal itteration
+							var x3 = fibArray[activeArray[x].size-1] * size * Math.cos(angle);
+							var y3 = fibArray[activeArray[x].size-1] * size * Math.sin(angle);
+							if(draw_line == "true") {
+								drawLine(x1,y1,x2,y2);		//comment out if you don't want line drawn
+							}
+							//canvas.strokeStyle = "#" + strokeColour.toString(16);		//uncomment to have a colour changing fractal (generally not that great but ah well)
+							canvas.stroke();
+							p = r;
+							if(constant_lineWidth == "true") {
+								canvas.lineWidth = lineWidth;
+							}
+							else {
+								canvas.lineWidth = fibArray[activeArray[x].size] * lineWidth;		//change this for to modify width of line
+							}
+							inactiveArray.push(new base(x2 + x3, y2 + y3, activeArray[x].size - 1));
+							//strokeColour = strokeColour + 0x002000;		// Uncomment for colour changing fractal
+							}
+					}
+
+				}
+				//strokeColour = strokeColour + 0x001000;		//uncomment for other colour changing fractal
+				for(x = 0; x < inactiveArray.length; x++) {
+					activeArray[x] = inactiveArray[x];
+				}
+				inactiveArray = [];
+				counter --;
+			}
+		}
+		</script>
+	</head>
+	<body>
+		<form>
+			size:<input id="size" value="10"></input>
+			repeat:<input id="repeat" value="3"></input>
+			offshoots:<input id="offshoots" value="3"></input>
+			distance:<input id="distance" value="1.5"></input>
+			<br>
+			Size_array:<input id="array" value="1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946">input each number seperated by a comma and space</input>
+			<br>
+			Draw_line: <input id="draw_line" value="true"></input>
+			constant_lineWidth:<input id="constant_lineWidth" value="true"></input>
+			lineWidth:<input id="lineWidth" value="1"></input>
+			<br>
+			<button id="draw" type="button" onclick="draw2()">Draw</button>
+			<button type="button" onclick="clearScreen()">Clear Screen</button>
+		</form>
+		<canvas width="1000px" height="1000px" id="canvas"> Your browser doesn't support canvas </canvas>
+		<script type="text/javascript">
+			var c = document.getElementById("canvas");
+			var canvas = c.getContext("2d");
+		</script>
+		<!--<button onclick="draw()">draw</button>-->
+	</body>
+</html>
